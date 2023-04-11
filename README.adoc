@@ -1,4 +1,4 @@
-\ = WebBased Jamal Editor 1.0.0-SNAPSHOT
+= WebBased Jamal Editor 1.0.0-SNAPSHOT
 
 This project is an experimental project that I started for two reasons:
 
