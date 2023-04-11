@@ -1,0 +1,6 @@
+{%@define x = 1%}
+{%x%}
+{%@comment{%@include LICENSE%}%}
+{%x%} s a a  sa   as  as a sas   as  as as s a a  sa   as  as a sas   as  as as s a a  sa   as  as a sas   as  as as s a a  sa   as  as a sas   as  as as s a a  sa   as  as a sas   as  as as s a a  sa   as  as a sas   as  as as s a a  sa   as  as a sas   as  as as xs a a  sa   as  as a sas   as  as as s a a  sa   as  as a sas   as  as as s a a  sa   as  as a sas   as  as as 
+
+Apple is under the tree{%x%}{%@xml:define z = <a>a</a>%} {%z /a%}
