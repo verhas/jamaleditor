@@ -3,8 +3,10 @@ package javax0.jamal.webeditor.views;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.selection.SelectionEvent;
 import com.vaadin.flow.data.selection.SelectionListener;
 import com.vaadin.flow.router.PageTitle;
@@ -36,17 +38,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@PageTitle("EDITOR")
+@PageTitle("Jamal Editor")
 @Route(value = "", layout = MainLayout.class)
 public class Editor extends VerticalLayout implements SelectionListener<Grid<File>, File>, ComponentEventListener<AceChanged> {
 
     final AceEditor aceSrc = new AceEditor();
-    private final Html compiledText = new Html(divWrap(""));
+    private final Html compiledHtml = new Html(divWrap(""));
+    private final TextArea compiledText = new TextArea();
 
     private File editedFile = null;
 
     private String lastValue;
-
+    private final FileNavTree navTree;
     private final Asciidoctor asciidoctor = Asciidoctor.Factory.create();
     private final Options asciiDocOptions = Options.builder()
             .attributes(Attributes.builder()
@@ -65,14 +68,16 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
         aceSrc.setAutoComplete(Configuration.INSTANCE.AUTO_COMPLETE);
         aceSrc.setTheme(Configuration.INSTANCE.THEME);
 
-        compiledText.getStyle().set("resize", "vertical");
+        compiledText.setWidth("95%");
+        compiledHtml.getStyle().set("resize", "vertical");
+        compiledText.getStyle().set("resize", "both");
 
 
-        final var splitEditor = new SplitLayout(aceSrc, compiledText);
+        final var splitEditor = new SplitLayout(aceSrc, new HorizontalLayout(compiledHtml, compiledText));
         splitEditor.setOrientation(SplitLayout.Orientation.HORIZONTAL);
         splitEditor.setSplitterPosition(50);
 
-        FileNavTree navTree = new FileNavTree(new File("."), this);
+        navTree = new FileNavTree(new File("."), this);
 
         final var split = new SplitLayout(navTree, splitEditor);
         split.setSplitterPosition(15);
@@ -96,8 +101,8 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
             aceSrc.setValue("");
             lastValue = null;
             aceSrc.setReadOnly(true);
-            compiledText.setHtmlContent(divWrap(""));
-            compiledText.setVisible(true);
+            compiledHtml.setHtmlContent(divWrap(""));
+            compiledText.setValue("");
         } else {
             try {
                 aceSrc.setValue(Files.readString(editedFile.toPath()));
@@ -171,24 +176,28 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
         if (editedFile == null || !event.isFromClient()) return;
         String result;
         try {
+            compiledText.setVisible(false);
+            compiledHtml.setVisible(true);
             final var file = editedFile.getAbsolutePath();
             saveEditedSourceFile(event, file);
             if (file.endsWith(".jam")) {
                 result = handleJamalFile(event, file);
             } else {
-                result = aceSrc.getValue();
+                result = event.getValue();
             }
             if (aceSrc.getMode().equals(AceMode.asciidoc)) {
                 result = asciidoctor.convert(result, asciiDocOptions);
             } else if (aceSrc.getMode().equals(AceMode.markdown)) {
                 result = compileMarkdown(result);
             } else {
-                result = "<pre>" + result + "</pre>";
+                compiledText.setVisible(true);
+                compiledHtml.setVisible(false);
             }
         } catch (IOException ex) {
             result = ex.getMessage();
         }
-        compiledText.setHtmlContent(divWrap(result));
+        compiledHtml.setHtmlContent(divWrap(result));
+        compiledText.setValue(result);
         lastValue = event.getValue();
     }
 
@@ -255,7 +264,7 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
     }
 
     @NotNull
-    private static String compileJamalFile(final String source, final String file) {
+    private String compileJamalFile(final String source, final String file) {
         final String result;
         try (final var processor = new Processor("{%", "%}")) {
             result = processor.process(Input.makeInput(source, new Position(file)));
