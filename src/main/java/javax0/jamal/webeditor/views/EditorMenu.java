@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 
 public class EditorMenu extends HorizontalLayout {
 
-
     public EditorMenu(Editor editor) {
         button(VaadinIcon.PARAGRAPH, editor.aceSrc::setShowInvisibles, editor.aceSrc::isShowInvisibles, false);
         button(VaadinIcon.LEVEL_LEFT, editor.aceSrc::setWrap, editor.aceSrc::isWrap, false);
@@ -18,8 +17,8 @@ public class EditorMenu extends HorizontalLayout {
         button(VaadinIcon.BOOK, editor.aceSrc::setAutoComplete, editor.aceSrc::isAutoComplete, true);
     }
 
-    private static ButtonVariant OFF = ButtonVariant.LUMO_TERTIARY;
-    private static ButtonVariant ON = ButtonVariant.LUMO_PRIMARY;
+    private static final ButtonVariant OFF = ButtonVariant.LUMO_TERTIARY;
+    private static final ButtonVariant ON = ButtonVariant.LUMO_PRIMARY;
 
     private void button(final VaadinIcon vaadinIcon, final Consumer<Boolean> setter, final Supplier<Boolean> getter, boolean deefault) {
         Button button = new Button(vaadinIcon.create());

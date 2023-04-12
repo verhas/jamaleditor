@@ -1,14 +1,19 @@
 package javax0.jamal.webeditor.views;
 
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.selection.SelectionEvent;
 import com.vaadin.flow.data.selection.SelectionListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vladsch.flexmark.ext.tables.TablesExtension;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.util.data.MutableDataSet;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.events.AceChanged;
@@ -16,6 +21,9 @@ import javax0.jamal.api.Position;
 import javax0.jamal.engine.Processor;
 import javax0.jamal.tools.Input;
 import javax0.jamal.webeditor.jamalutils.InterruptingInput;
+import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.Attributes;
+import org.asciidoctor.Options;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -32,11 +40,18 @@ import java.util.Map;
 public class Editor extends VerticalLayout implements SelectionListener<Grid<File>, File>, ComponentEventListener<AceChanged> {
 
     final AceEditor aceSrc = new AceEditor();
-    private final TextArea compiledText = new TextArea();
+    private final Html compiledText = new Html(divWrap(""));
 
     private File editedFile = null;
 
     private String lastValue;
+
+    private final Asciidoctor asciidoctor = Asciidoctor.Factory.create();
+    private final Options asciiDocOptions = Options.builder()
+            .attributes(Attributes.builder()
+                    .attribute(Attributes.SHOW_TITLE, true)
+                    .build())
+            .build();
 
     public Editor() {
         EditorMenu menu = new EditorMenu(this);
@@ -48,7 +63,6 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
 
         aceSrc.setAutoComplete(true);
 
-        compiledText.setReadOnly(true);
         compiledText.getStyle().set("resize", "vertical");
 
 
@@ -98,7 +112,8 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
 
     static {
         MODES.putAll(Map.of("adoc", AceMode.asciidoc,
-                "txt", AceMode.text
+                "txt", AceMode.text,
+                "md", AceMode.markdown
         ));
     }
 
@@ -150,29 +165,55 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
     @Override
     public void onComponentEvent(final AceChanged event) {
         if (editedFile == null || !event.isFromClient()) return;
+        String result;
         try {
             final var file = editedFile.getAbsolutePath();
             saveEditedSourceFile(event, file);
             if (file.endsWith(".jam")) {
-                handleJamalFile(event, file);
+                result = handleJamalFile(event, file);
             } else {
-                compiledText.setValue("");
+                result = aceSrc.getValue();
+            }
+            if (aceSrc.getMode().equals(AceMode.asciidoc)) {
+                result = asciidoctor.convert(result, asciiDocOptions);
+            } else if (aceSrc.getMode().equals(AceMode.markdown)) {
+                result = compileMarkdown(result);
             }
         } catch (IOException ex) {
-            compiledText.setValue(ex.getMessage());
+            result = ex.getMessage();
         }
+        compiledText.setHtmlContent(divWrap(result));
         lastValue = event.getValue();
     }
 
-    private void handleJamalFile(final AceChanged event, final String file) {
-        compiledText.setValue(compileJamalFile(event.getValue(), file));
+    private String handleJamalFile(final AceChanged event, final String file) {
+        var jamal = compileJamalFile(event.getValue(), file);
         if (aceSrc.isAutoComplete()) {
             aceSrc.addStaticWordCompleter(calculateCompletions(event.getValue(), getCursorPosition(event.getValue()), file), "macros");
         }
+        return jamal;
+    }
+
+    private static String compileMarkdown(String input) {
+        MutableDataSet options = new MutableDataSet();
+        options.set(Parser.EXTENSIONS, List.of(new TablesExtension()));
+
+        Parser parser = Parser.builder(options).build();
+        HtmlRenderer renderer = HtmlRenderer.builder(options).build();
+
+        Node document = parser.parse(input);
+        return renderer.render(document);
+    }
+
+    private static String divWrap(String input) {
+        if (input == null || input.isBlank()) {
+            return "<div />";
+        }
+        return "<div>" + input + "</div>";
     }
 
     /**
-     * Create the list of the word completions that are available at the currect cursor position.
+     * Create the list of the word completions that are available at the current cursor position.
      *
      * @param source         the source string to analyse
      * @param cursorPosition the current cursor position
