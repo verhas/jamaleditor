@@ -11,6 +11,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import javax0.jamal.webeditor.Configuration;
 
 /**
  * The main view is a top-level placeholder for other views.
@@ -22,7 +23,13 @@ public class MainLayout extends AppLayout {
     public MainLayout() {
         final var clientIp = VaadinSession.getCurrent().getBrowser().getAddress();
         if( !clientIp.equals("127.0.0.1") && !clientIp.equals("0:0:0:0:0:0:0:1") ) {
-            throw new RuntimeException("Access denied from " + clientIp);
+            if(Configuration.INSTANCE.CLIENT != null ){
+                if( ! Configuration.INSTANCE.CLIENT.matcher(clientIp).matches()){
+                    throw new RuntimeException("Access denied from " + clientIp);
+                }
+            }else {
+                throw new RuntimeException("Access denied from " + clientIp);
+            }
         }
         final var editor = new Editor();
         setContent(editor);

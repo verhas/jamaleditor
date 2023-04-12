@@ -15,7 +15,6 @@ public class EditorMenu extends HorizontalLayout {
         button(VaadinIcon.PARAGRAPH, editor.aceSrc::setShowInvisibles, editor.aceSrc::isShowInvisibles, false);
         button(VaadinIcon.LEVEL_LEFT, editor.aceSrc::setWrap, editor.aceSrc::isWrap, false);
         button(VaadinIcon.BAR_CHART_V, editor.aceSrc::setShowGutter, editor.aceSrc::isShowGutter, true);
-        button(VaadinIcon.BOOK, editor.aceSrc::setAutoComplete, editor.aceSrc::isAutoComplete, true);
     }
 
     private static ButtonVariant OFF = ButtonVariant.LUMO_TERTIARY;
