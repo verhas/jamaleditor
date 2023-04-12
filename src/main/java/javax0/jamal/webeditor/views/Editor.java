@@ -96,6 +96,8 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
             aceSrc.setValue("");
             lastValue = null;
             aceSrc.setReadOnly(true);
+            compiledText.setHtmlContent(divWrap(""));
+            compiledText.setVisible(true);
         } else {
             try {
                 aceSrc.setValue(Files.readString(editedFile.toPath()));
@@ -180,6 +182,8 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
                 result = asciidoctor.convert(result, asciiDocOptions);
             } else if (aceSrc.getMode().equals(AceMode.markdown)) {
                 result = compileMarkdown(result);
+            } else {
+                result = "<pre>" + result + "</pre>";
             }
         } catch (IOException ex) {
             result = ex.getMessage();

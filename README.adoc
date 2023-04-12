@@ -1,3 +1,5 @@
+
+
 = WebBased Jamal Editor 1.0.0-SNAPSHOT
 
 This project is an experimental project that I started for two reasons:
@@ -21,10 +23,39 @@ http://localhost:8080 in your browser.
 You can also import the project to your IDE of choice as you would with any Maven project.
 Read more on https://vaadin.com/docs/latest/guide/step-by-step/importing[how to import Vaadin projects to different IDEs] (Eclipse, IntelliJ IDEA, NetBeans, and VS Code).
 
+== Configuring the application
+
+The application can be configured creating a `jamal-editor.properties` file in the directory, where the application was started.
+
+The following properties are supported:
+
+* `autoComplete`
++
+can be used to configure the auto-completion.
+Auto-completion is enabled only for Jamal files by default, and it focuses on Jamal commands.
+The completion will suggest the built-in and user defined macros that are available at the point of editing.
+     *
+In some cases the autocompletion may present too much computation on the application.
+In this case the auto-completion can be disabled by setting the value of this key to `false`.
+* `theme`
++
+can be used to configure the theme of the editor.
+This is how the editor starts up.
+It can also be changed interactively by the user.
+Changing the themes on the user interface does not change the configuration file.
+
+* `client`
++
+can be used to configure a regular expression that is used to identify the client.
+If this configuration key is missing only the local host can be used as a client.
+If this key is defined it is compared against the client IP address as a string.
+
+
+
+
 == Deploying to Production
 
 To create a production build, call
-
 
 Windows:
 
