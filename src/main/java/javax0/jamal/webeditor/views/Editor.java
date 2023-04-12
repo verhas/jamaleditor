@@ -20,6 +20,7 @@ import de.f0rce.ace.events.AceChanged;
 import javax0.jamal.api.Position;
 import javax0.jamal.engine.Processor;
 import javax0.jamal.tools.Input;
+import javax0.jamal.webeditor.Configuration;
 import javax0.jamal.webeditor.jamalutils.InterruptingInput;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.Attributes;
@@ -61,7 +62,8 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
         aceSrc.getStyle().set("resize", "vertical");
         aceSrc.setReadOnly(true);
 
-        aceSrc.setAutoComplete(true);
+        aceSrc.setAutoComplete(Configuration.INSTANCE.AUTO_COMPLETE);
+        aceSrc.setTheme(Configuration.INSTANCE.THEME);
 
         compiledText.getStyle().set("resize", "vertical");
 
@@ -188,7 +190,7 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
 
     private String handleJamalFile(final AceChanged event, final String file) {
         var jamal = compileJamalFile(event.getValue(), file);
-        if (aceSrc.isAutoComplete()) {
+        if (Configuration.INSTANCE.AUTO_COMPLETE) {
             aceSrc.addStaticWordCompleter(calculateCompletions(event.getValue(), getCursorPosition(event.getValue()), file), "macros");
         }
         return jamal;
