@@ -64,7 +64,7 @@ public class FileNavTree extends TreeGrid<File> {
     }
 
     private record FileDialogContext(String header, String fieldLabel, String actionButtonLabel,
-                                     BiConsumer<File, String> action) {
+                                     BiConsumer<File, String> action, boolean namePrefilled) {
     }
 
     private void createDialogWithText(final GridContextMenu.GridContextMenuItemClickEvent<File> e, FileDialogContext ctx) {
@@ -73,6 +73,9 @@ public class FileNavTree extends TreeGrid<File> {
             final var dialog = new Dialog();
             dialog.setHeaderTitle(ctx.header);
             final TextField fileName = new TextField(ctx.fieldLabel);
+            if (ctx.namePrefilled) {
+                fileName.setValue(file.get().getName());
+            }
             fileName.setAutofocus(true);
             Button actionButton = new Button(ctx.actionButtonLabel, __ -> {
                 ctx.action.accept(file.get(), fileName.getValue());
@@ -93,15 +96,15 @@ public class FileNavTree extends TreeGrid<File> {
     }
 
     private void createNewFileDialog(final GridContextMenu.GridContextMenuItemClickEvent<File> e) {
-        createDialogWithText(e, new FileDialogContext("New File", "File Name:", "Create New File", FileNavTree::createNewFile));
+        createDialogWithText(e, new FileDialogContext("New File", "File Name:", "Create New File", FileNavTree::createNewFile,false));
     }
 
     private void createNewDirectoryDialog(final GridContextMenu.GridContextMenuItemClickEvent<File> e) {
-        createDialogWithText(e, new FileDialogContext("New Directory", "Directory Name:", "Create New Directory", FileNavTree::createNewDirectory));
+        createDialogWithText(e, new FileDialogContext("New Directory", "Directory Name:", "Create New Directory", FileNavTree::createNewDirectory,false));
     }
 
     private void renameDialog(final GridContextMenu.GridContextMenuItemClickEvent<File> e) {
-        createDialogWithText(e, new FileDialogContext("Rename", "New Name:", "Rename", FileNavTree::rename));
+        createDialogWithText(e, new FileDialogContext("Rename", "New Name:", "Rename", FileNavTree::rename,true));
     }
 
     private static void deleteFile(final File file) {
