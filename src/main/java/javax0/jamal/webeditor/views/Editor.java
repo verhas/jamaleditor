@@ -46,7 +46,7 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
     private final Html compiledHtml = new Html(divWrap(""));
     private final TextArea compiledText = new TextArea();
 
-    private File editedFile = null;
+    File editedFile = null;
 
     private String lastValue;
     private final FileNavTree navTree;
@@ -56,9 +56,10 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
                     .attribute(Attributes.SHOW_TITLE, true)
                     .build())
             .build();
+    private EditorMenu menu;
 
     public Editor() {
-        EditorMenu menu = new EditorMenu(this);
+        menu = new EditorMenu(this);
         add(menu);
 
         aceSrc.addAceChangedListener(this);
@@ -97,6 +98,7 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
         editedFile = event.getFirstSelectedItem()
                 .filter(File::isFile)
                 .orElse(null);
+        menu.enableDisable();
         if (editedFile == null) {
             aceSrc.setValue("");
             lastValue = null;
@@ -149,7 +151,7 @@ public class Editor extends VerticalLayout implements SelectionListener<Grid<Fil
     }
 
 
-    private Position getCursorPosition(final String current) {
+    Position getCursorPosition(final String current) {
         if (lastValue != null) {
             int line = 0;
             int col = 0;
