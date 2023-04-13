@@ -75,6 +75,7 @@ Once the JAR file is built, you can run it using
   java -jar target/jamal-editor-1.0.0-SNAPSHOT.jar
 
 views of your application.
+
 * `views` folder in `frontend/` contains the client-side JavaScript views of your application.
 * `themes` folder in `frontend/` contains the custom CSS styles.
 
